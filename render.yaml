@@ -1,0 +1,15 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# With this file, Render auto-detects the build & start commands when you
+# create the service from this repo.
+services:
+  - type: web
+    name: todo-web
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true   # Render generates a secure random value
+      - key: PYTHON_VERSION
+        value: "3.11.9"

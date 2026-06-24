@@ -1,0 +1,23 @@
+# Local task data (not deployed; Render's free disk is ephemeral anyway)
+todo.json
+
+# Virtual environment
+venv/
+.venv/
+
+# Python caches / build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Environment files
+.env
+
+# macOS
+.DS_Store
+
+# Editor / tooling
+.claude/
+.vscode/
+.idea/

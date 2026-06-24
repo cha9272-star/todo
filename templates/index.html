@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Todo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="wrap">
+    <h1>✓ Todo</h1>
+
+    <p class="counts">
+      <span>{{ counts.total }} total</span>
+      <span>{{ counts.pending }} pending</span>
+      <span>{{ counts.done }} done</span>
+      {% if counts.overdue %}<span class="overdue">{{ counts.overdue }} overdue</span>{% endif %}
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Add task -->
+    <form class="add" method="post" action="{{ url_for('add') }}">
+      <input type="hidden" name="next" value="{{ request.full_path }}">
+      <input type="text" name="text" placeholder="Add a task…" required autofocus>
+      <input type="date" name="due" title="Due date">
+      <select name="priority" title="Priority">
+        <option value="low">low</option>
+        <option value="medium" selected>medium</option>
+        <option value="high">high</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+
+    <!-- Search & filter -->
+    <form class="filters" method="get" action="{{ url_for('index') }}">
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="Search…">
+      <select name="status">
+        {% for s in ['all', 'pending', 'done'] %}
+          <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <select name="priority">
+        <option value="">any priority</option>
+        {% for p in priorities %}
+          <option value="{{ p }}" {{ 'selected' if filters.priority == p }}>{{ p }}</option>
+        {% endfor %}
+      </select>
+      <select name="sort">
+        {% for s in ['priority', 'due', 'none'] %}
+          <option value="{{ s }}" {{ 'selected' if filters.sort == s }}>sort: {{ s }}</option>
+        {% endfor %}
+      </select>
+      <label class="chk">
+        <input type="checkbox" name="overdue" value="1" {{ 'checked' if filters.overdue }}> overdue
+      </label>
+      <button type="submit">Apply</button>
+      <a class="reset" href="{{ url_for('index') }}">Reset</a>
+    </form>
+
+    <!-- Task list -->
+    <ul class="tasks">
+      {% for task in tasks %}
+        {% set ds = due_status(task) %}
+        <li class="task {{ 'is-done' if task.done }} prio-{{ task.priority }}">
+          <form method="post" action="{{ url_for('toggle', task_id=task.id) }}" class="inline">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit" class="check" title="Toggle done">{{ '☑' if task.done else '☐' }}</button>
+          </form>
+          <span class="badge prio">{{ priority_label[task.priority] }}</span>
+          <span class="text">{{ task.text }}</span>
+          {% if task.due %}
+            <span class="due {{ ds }}">
+              {{ task.due }}{% if ds == 'overdue' %} · overdue{% elif ds == 'today' %} · today{% endif %}
+            </span>
+          {% endif %}
+          <form method="post" action="{{ url_for('delete', task_id=task.id) }}" class="inline del"
+                onsubmit="return confirm('Delete this task?');">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit" class="x" title="Delete">✕</button>
+          </form>
+        </li>
+      {% else %}
+        <li class="empty">No tasks match. Add one above ↑</li>
+      {% endfor %}
+    </ul>
+  </main>
+</body>
+</html>
