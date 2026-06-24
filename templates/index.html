@@ -23,9 +23,8 @@
       {% endfor %}
     {% endwith %}
 
-    <!-- Add task -->
+    <!-- Add task (always returns to the unfiltered list so the new item shows) -->
     <form class="add" method="post" action="{{ url_for('add') }}">
-      <input type="hidden" name="next" value="{{ request.full_path }}">
       <input type="text" name="text" placeholder="Add a task…" required autofocus>
       <input type="date" name="due" title="Due date">
       <select name="priority" title="Priority">

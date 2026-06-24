@@ -62,15 +62,21 @@ def index():
 
 @app.route("/add", methods=["POST"])
 def add():
+    # An empty date field arrives as "" — treat that (and whitespace) as "no due
+    # date" so a task can be added without picking a date.
+    due = (request.form.get("due") or "").strip() or None
     try:
         store.add_task(
             request.form.get("text", ""),
-            due=request.form.get("due") or None,
+            due=due,
             priority=request.form.get("priority", "medium"),
         )
     except store.TaskError as exc:
         flash(str(exc), "error")
-    return redirect(_back())
+    # Always return to the unfiltered list so the newly added task is visible —
+    # redirecting back to an active search/filter could hide it and look like
+    # "nothing was added".
+    return redirect(url_for("index"))
 
 
 @app.route("/toggle/<int:task_id>", methods=["POST"])
